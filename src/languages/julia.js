@@ -13,7 +13,7 @@ export default function(hljs) {
   // the following scripts for each.
 
   // ref: https://docs.julialang.org/en/v1/manual/variables/#Allowed-Variable-Names
-  var VARIABLE_NAME_RE = '[A-Za-z_\\u00A1-\\uFFFF][A-Za-z_0-9\\u00A1-\\uFFFF]*';
+  var VARIABLE_NAME_RE = '(?:[A-Za-z_\\u00A1-\\uFFFF][A-Za-z_0-9\\u00A1-\\uFFFF!]*)';
 
   // # keyword generator, multi-word keywords handled manually below (Julia 1.5.2)
   // import REPL.REPLCompletions
@@ -342,14 +342,81 @@ export default function(hljs) {
     //  * hexadecimal literal (e.g. 0xfedcba876543210)
     //  * hexadecimal floating point literal (e.g. 0x1p0, 0x1.2p2)
     //  * decimal literal (e.g. 9876543210, 100_000_000)
-    //  * floating pointe literal (e.g. 1.2, 1.2f, .2, 1., 1.2e10, 1.2e-10)
+    //  * floating point literal (e.g. 1.2, 1.2f, .2, 1., 1.2e10, 1.2e-10)
     begin: /(\b0x[\d_]*(\.[\d_]*)?|0x\.\d[\d_]*)p[-+]?\d+|\b0[box][a-fA-F0-9][a-fA-F0-9_]*|(\b\d[\d_]*(\.[\d_]*)?|\.\d[\d_]*)([eEfF][-+]?\d+)?/,
     relevance: 0
   };
 
+  // Assignment and control-flow operators && and ||
+  var KEYWORDLIKE_OPERATORS = {
+    className: 'keyword',
+    begin: '&&|\\|\\||=',
+  };
+
+  var BUILTIN_OPERATORS = {
+    className: 'built_in',
+    variants: [
+      // Multi-character operators
+      {begin: '::|<:|>:|[=!]==|//|=>|\\/\\/|<<|>>>|>>|->'},
+      // Unicode operators (https://github.com/JuliaLang/julia/blob/master/src/julia-parser.scm)
+      {begin: /[≤≥¬←→↔↚↛↠↣↦↮⇎⇏⇒⇔⇴⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿⟵⟶⟷⟷⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤌⤍⤎⤏⤐⤑⤔⤕⤖⤗⤘⤝⤞⤟⤠⥄⥅⥆⥇⥈⥊⥋⥎⥐⥒⥓⥖⥗⥚⥛⥞⥟⥢⥤⥦⥧⥨⥩⥪⥫⥬⥭⥰⧴⬱⬰⬲⬳⬴⬵⬶⬷⬸⬹⬺⬻⬼⬽⬾⬿⭀⭁⭂⭃⭄⭇⭈⭉⭊⭋⭌￩￫≡≠≢∈∉∋∌⊆⊈⊂⊄⊊∝∊∍∥∦∷∺∻∽∾≁≃≄≅≆≇≈≉≊≋≌≍≎≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≣≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊃⊅⊇⊉⊋⊏⊐⊑⊒⊜⊩⊬⊮⊰⊱⊲⊳⊴⊵⊶⊷⋍⋐⋑⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋲⋳⋴⋵⋶⋷⋸⋹⋺⋻⋼⋽⋾⋿⟈⟉⟒⦷⧀⧁⧡⧣⧤⧥⩦⩧⩪⩫⩬⩭⩮⩯⩰⩱⩲⩳⩴⩵⩶⩷⩸⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪣⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪳⪴⪵⪶⪷⪸⪹⪺⪻⪼⪽⪾⪿⫀⫁⫂⫃⫄⫅⫆⫇⫈⫉⫊⫋⫌⫍⫎⫏⫐⫑⫒⫓⫔⫕⫖⫗⫘⫙⫷⫸⫹⫺⊢⊣⊕⊖⊞⊟∪∨⊔±∓∔∸≂≏⊎⊻⊽⋎⋓⧺⧻⨈⨢⨣⨤⨥⨦⨧⨨⨩⨪⨫⨬⨭⨮⨹⨺⩁⩂⩅⩊⩌⩏⩐⩒⩔⩖⩗⩛⩝⩡⩢⩣÷⋅∘×∩∧⊗⊘⊙⊚⊛⊠⊡⊓∗∙∤⅋≀⊼⋄⋆⋇⋉⋊⋋⋌⋏⋒⟑⦸⦼⦾⦿⧶⧷⨇⨰⨱⨲⨳⨴⨵⨶⨷⨸⨻⨼⨽⩀⩃⩄⩋⩍⩎⩑⩓⩕⩘⩚⩜⩞⩟⩠⫛⊍▷⨝⟕⟖⟗↑↓⇵⟰⟱⤈⤉⤊⤋⤒⤓⥉⥌⥍⥏⥑⥔⥕⥘⥙⥜⥝⥠⥡⥣⥥⥮⥯￪￬]/},
+      // ASCII operators
+      {begin: /[-+*/\\^:<>~?$%.]/},
+      // | and & (unless they are really || and && in disguise)
+      {begin: '&(?!&)|\\|(?!\\|)'},
+      // ! is an operator unless it is used in a variable
+      {begin: '(?<!' + VARIABLE_NAME_RE + ')!'}
+    ]
+  };
+
+  // Match for types in unambiguous contexts, such as ::T, <:T etc.
+  var TYPE_CONTEXT = {
+    className: 'type',
+    variants: [
+      // Match Base in Base.Union{...}
+      {begin: VARIABLE_NAME_RE + '(?=\\.' + VARIABLE_NAME_RE + '{)', end: '}'},
+      // Match Union{...}
+      {begin: VARIABLE_NAME_RE + '{', end: '}'},
+      // Match T in e.g. ::Q.T, S<:Q.T, S>:Q.T
+      {begin: '(?<=[<>:]:\\s?' + VARIABLE_NAME_RE + '\\.)' + VARIABLE_NAME_RE},
+      // Match T in e.g. ::T, S<:T, S>:T
+      {begin: '(?<=[<>:]:\\s?)' + VARIABLE_NAME_RE},
+      // Match S in e.g. S.Q<:T, S.Q>:T
+      {begin: VARIABLE_NAME_RE + '(?=\\.' + VARIABLE_NAME_RE + '\\s?[<>]:)'},
+      // Match S in e.g. S<:T, S>:T
+      {begin: VARIABLE_NAME_RE + '(?=\\s?[<>]:)'},
+    ],
+    contains: [
+      BUILTIN_OPERATORS,
+      KEYWORDLIKE_OPERATORS,
+      'self',
+    ]
+  };
+
+  // Match where ... constructs
+  var WHERE_CLAUSE = {
+    className: '',
+    variants: [
+      // Match where {...}
+      {begin: '(?<=where\\s+){' + '', end: '}', excludeBegin:true, excludeEnd:true},
+      // Match where T
+      {className: 'type', begin: '(?<=where\\s+)' + VARIABLE_NAME_RE},
+    ],
+    contains: [
+      TYPE_CONTEXT,
+      BUILTIN_OPERATORS,
+      KEYWORDLIKE_OPERATORS,
+      // Match single identifier, e.g. where {T}
+      {begin: VARIABLE_NAME_RE, className:'type'}
+    ]
+  };
+
   var CHAR = {
     className: 'string',
-    begin: /'(.|\\[xXuU][a-zA-Z0-9]+)'/
+    variants: [
+      {begin: /'(.|\\[xXuU][a-zA-Z0-9]+)'/},
+      {begin: /'\\[rn\\$]'/},
+    ]
   };
 
   var INTERPOLATION = {
@@ -359,30 +426,46 @@ export default function(hljs) {
   };
 
   var INTERPOLATED_VARIABLE = {
-    className: 'variable',
+    className: 'subst',
     begin: '\\$' + VARIABLE_NAME_RE
   };
 
+  // Literal String, Regex and Cmd strings
   // TODO: neatly escape normal code in string literal
-  var STRING = {
+  // TODO: mark docstrings as doctag
+  var STRING_REGEX_CMD = {
     className: 'string',
     contains: [hljs.BACKSLASH_ESCAPE, INTERPOLATION, INTERPOLATED_VARIABLE],
     variants: [
+      { begin: /r"""/, end: /"""\w*/, relevance: 10, className: 'regexp', contains: [hljs.BACKSLASH_ESCAPE] },
       { begin: /\w*"""/, end: /"""\w*/, relevance: 10 },
-      { begin: /\w*"/, end: /"\w*/ }
+      { begin: '```', end: '```' },
+      { begin: /r"/, end: /"\w*/, className: 'regexp', contains: [hljs.BACKSLASH_ESCAPE] },
+      { begin: /\w*"/, end: /"\w*/ },
+      { begin: '`', end: '`'},
     ]
   };
 
-  var COMMAND = {
-    className: 'string',
-    contains: [hljs.BACKSLASH_ESCAPE, INTERPOLATION, INTERPOLATED_VARIABLE],
-    begin: '`', end: '`'
-  };
+  // Conservative matching of symbol as identifier after :, unless there is a
+  // valid identifier/number just before; e.g. a:b, 1:b is not a symbol
+  var SYMBOL = {
+    className: 'symbol',
+    begin: '(?<!(' + VARIABLE_NAME_RE + '|[\\d\\.]+|[:<>]+)\\s*)(:' + VARIABLE_NAME_RE + ')',
+  }
 
   var MACROCALL = {
     className: 'meta',
     begin: '@' + VARIABLE_NAME_RE
   };
+
+  // Useful group of "atoms" used later
+  var ATOMS = [
+    NUMBER,
+    CHAR,
+    STRING_REGEX_CMD,
+    SYMBOL,
+    MACROCALL
+  ]
 
   var COMMENT = {
     className: 'comment',
@@ -392,13 +475,90 @@ export default function(hljs) {
     ]
   };
 
+
+  var FUNCTION_CALL = {
+    className: '',
+    // Match fun(... and fun.(...
+    // begin: '(\\b' + VARIABLE_NAME_RE + '!*\\.?\\()',
+    begin: '(\\b' + VARIABLE_NAME_RE + '\\.?\\()',
+    end: '\\)',
+    returnBegin:true,
+    keywords: KEYWORDS,
+    contains: [
+      // Cheating a bit -- not all functions are builtins, but who cares in julia!
+      {begin:'\\b' + VARIABLE_NAME_RE + '(?=\\.?\\()', className: 'built_in'},
+      ...ATOMS,
+      'self',
+      TYPE_CONTEXT,
+      BUILTIN_OPERATORS,
+      KEYWORDLIKE_OPERATORS,
+    ]
+  }
+
+  var FUNCTION_DEFINITION_PARAMETERS = {
+    begin: '(?<=' + VARIABLE_NAME_RE + ')\\(',
+    end: '\\)',
+    className: '',
+    keywords: KEYWORDS,
+    contains: [
+      ...ATOMS,
+      TYPE_CONTEXT,
+      FUNCTION_CALL,
+      BUILTIN_OPERATORS,
+      KEYWORDLIKE_OPERATORS,
+      {begin: '(?<!=\\s?)\\b' + VARIABLE_NAME_RE + '\\b', className: 'params'},
+    ]
+  };
+
+  var FUNCTION_DEFINITION = {
+    className: '',
+    begin: '(\\bfunction\\s+' + '(' + VARIABLE_NAME_RE + '\\.)*)' + VARIABLE_NAME_RE + '\\(.*\\)(\\s+where\\s+({.*}|' + VARIABLE_NAME_RE + '))?',
+    returnBegin:true,
+    contains: [
+        // Function keyword
+        {begin: '\\bfunction\\s', className: 'keyword'},
+        // Skip over leading A.B.
+        {begin: '(' + VARIABLE_NAME_RE + ')(?=\\.)', end: '(?=' + VARIABLE_NAME_RE+'\\()', contains:[
+          {begin: '\\.', className: 'built_in'}
+        ]},
+        // Function name
+        {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
+        // Parameters
+        FUNCTION_DEFINITION_PARAMETERS,
+        // Possibly a where-clause
+        WHERE_CLAUSE,
+    ]
+  }
+
+  var SHORT_FUNCTION_DEFINITION = {
+    className: '',
+    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where\\s+({.*}|' + VARIABLE_NAME_RE + '))?\\s*=',
+    returnBegin:true,
+    contains: [
+        {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
+        FUNCTION_DEFINITION_PARAMETERS,
+        WHERE_CLAUSE
+    ]
+  }
+
+  var TYPEDEF = {
+    className: 'class',
+    variants: [
+      { begin: '(?<=primitive\\s+type\\s+)' + VARIABLE_NAME_RE },
+      { begin: '(?<=abstract\\s+type\\s+)' + VARIABLE_NAME_RE + '({.*?})?' },
+      { begin: '(?<=(mutable\\s+)?struct\\s+)' + VARIABLE_NAME_RE + '({.*?})?' },
+    ]
+  }
+
   DEFAULT.name = 'Julia';
   DEFAULT.contains = [
-    NUMBER,
-    CHAR,
-    STRING,
-    COMMAND,
-    MACROCALL,
+    ...ATOMS,
+    FUNCTION_DEFINITION,
+    SHORT_FUNCTION_DEFINITION,
+    FUNCTION_CALL,
+    TYPEDEF,
+    WHERE_CLAUSE,
+    TYPE_CONTEXT,
     COMMENT,
     hljs.HASH_COMMENT_MODE,
     {
@@ -406,6 +566,8 @@ export default function(hljs) {
       begin:
         '\\b(((abstract|primitive)\\s+)type|(mutable\\s+)?struct)\\b'
     },
+    BUILTIN_OPERATORS,
+    KEYWORDLIKE_OPERATORS,
     {begin: /<:/}  // relevance booster
   ];
   INTERPOLATION.contains = DEFAULT.contains;
