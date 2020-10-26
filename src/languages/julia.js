@@ -479,14 +479,13 @@ export default function(hljs) {
   var FUNCTION_CALL = {
     className: '',
     // Match fun(... and fun.(...
-    // begin: '(\\b' + VARIABLE_NAME_RE + '!*\\.?\\()',
     begin: '(\\b' + VARIABLE_NAME_RE + '({.*?}|\\.)?\\()',
     end: '\\)',
     returnBegin:true,
     keywords: KEYWORDS,
     contains: [
       // Cheating a bit -- not all functions are builtins, but who cares in julia!
-      {begin:'\\b(ccall|new({.*?})?)(?=\\()', className: 'keyword'}, // Non-standard function
+      {begin:'\\b(ccall|new({.*?})?)(?=\\()', className: 'keyword'}, // Non-standard functions
       {begin:'\\b' + VARIABLE_NAME_RE + '({.*?})?(?=\\.?\\()', className: 'built_in'},
       ...ATOMS,
       'self',
@@ -513,7 +512,7 @@ export default function(hljs) {
 
   var FUNCTION_DEFINITION = {
     className: '',
-    begin: '\\bfunction[ \\t]+' + '(' + VARIABLE_NAME_RE + '\\.)*' + VARIABLE_NAME_RE + '({.*})?\\(.*\\)([ \\t]+where\\s+({.*?}|' + VARIABLE_NAME_RE + '))?',
+    begin: '\\bfunction[ \\t]+' + '(' + VARIABLE_NAME_RE + '\\.)*' + VARIABLE_NAME_RE + '({.*})?\\(.*\\)([ \\t]+where\\s+({.*?}|' + VARIABLE_NAME_RE + '([ \\t]+[<>]:\\s+' + VARIABLE_NAME_RE + '({.*})?)?))*',
     returnBegin:true,
     contains: [
         // Function keyword
@@ -526,14 +525,14 @@ export default function(hljs) {
         {begin: VARIABLE_NAME_RE + '({.*?})?(?=\\()', className: 'title'},
         // Parameters
         FUNCTION_DEFINITION_PARAMETERS,
-        // Possibly a where-clause
+        // Possibly where-clauses
         WHERE_CLAUSE,
     ]
   }
 
   var SHORT_FUNCTION_DEFINITION = {
     className: '',
-    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where.*?)?\\s*=',
+    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where.*?)?\\s*(?==)',
     returnBegin:true,
     contains: [
         {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
