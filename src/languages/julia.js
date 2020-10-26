@@ -325,7 +325,7 @@ export default function(hljs) {
     $pattern: VARIABLE_NAME_RE,
     keyword: KEYWORD_LIST.join(" "),
     literal: LITERAL_LIST.join(" "),
-    built_in: BUILT_IN_LIST.join(" "),
+    type: BUILT_IN_LIST.join(" "),
   };
 
   // placeholder for recursive self-reference
@@ -357,7 +357,7 @@ export default function(hljs) {
     className: 'built_in',
     variants: [
       // Multi-character operators
-      {begin: '::|<:|>:|[=!]==|//|=>|\\/\\/|<<|>>>|>>|->'},
+      {begin: '::|<:|>:|[=!]?==|[<>!]=|//|=>|\\/\\/|<<|>>>|>>|->'},
       // Unicode operators (https://github.com/JuliaLang/julia/blob/master/src/julia-parser.scm)
       {begin: /[≤≥¬←→↔↚↛↠↣↦↮⇎⇏⇒⇔⇴⇶⇷⇸⇹⇺⇻⇼⇽⇾⇿⟵⟶⟷⟷⟹⟺⟻⟼⟽⟾⟿⤀⤁⤂⤃⤄⤅⤆⤇⤌⤍⤎⤏⤐⤑⤔⤕⤖⤗⤘⤝⤞⤟⤠⥄⥅⥆⥇⥈⥊⥋⥎⥐⥒⥓⥖⥗⥚⥛⥞⥟⥢⥤⥦⥧⥨⥩⥪⥫⥬⥭⥰⧴⬱⬰⬲⬳⬴⬵⬶⬷⬸⬹⬺⬻⬼⬽⬾⬿⭀⭁⭂⭃⭄⭇⭈⭉⭊⭋⭌￩￫≡≠≢∈∉∋∌⊆⊈⊂⊄⊊∝∊∍∥∦∷∺∻∽∾≁≃≄≅≆≇≈≉≊≋≌≍≎≐≑≒≓≔≕≖≗≘≙≚≛≜≝≞≟≣≦≧≨≩≪≫≬≭≮≯≰≱≲≳≴≵≶≷≸≹≺≻≼≽≾≿⊀⊁⊃⊅⊇⊉⊋⊏⊐⊑⊒⊜⊩⊬⊮⊰⊱⊲⊳⊴⊵⊶⊷⋍⋐⋑⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋲⋳⋴⋵⋶⋷⋸⋹⋺⋻⋼⋽⋾⋿⟈⟉⟒⦷⧀⧁⧡⧣⧤⧥⩦⩧⩪⩫⩬⩭⩮⩯⩰⩱⩲⩳⩴⩵⩶⩷⩸⩹⩺⩻⩼⩽⩾⩿⪀⪁⪂⪃⪄⪅⪆⪇⪈⪉⪊⪋⪌⪍⪎⪏⪐⪑⪒⪓⪔⪕⪖⪗⪘⪙⪚⪛⪜⪝⪞⪟⪠⪡⪢⪣⪤⪥⪦⪧⪨⪩⪪⪫⪬⪭⪮⪯⪰⪱⪲⪳⪴⪵⪶⪷⪸⪹⪺⪻⪼⪽⪾⪿⫀⫁⫂⫃⫄⫅⫆⫇⫈⫉⫊⫋⫌⫍⫎⫏⫐⫑⫒⫓⫔⫕⫖⫗⫘⫙⫷⫸⫹⫺⊢⊣⊕⊖⊞⊟∪∨⊔±∓∔∸≂≏⊎⊻⊽⋎⋓⧺⧻⨈⨢⨣⨤⨥⨦⨧⨨⨩⨪⨫⨬⨭⨮⨹⨺⩁⩂⩅⩊⩌⩏⩐⩒⩔⩖⩗⩛⩝⩡⩢⩣÷⋅∘×∩∧⊗⊘⊙⊚⊛⊠⊡⊓∗∙∤⅋≀⊼⋄⋆⋇⋉⋊⋋⋌⋏⋒⟑⦸⦼⦾⦿⧶⧷⨇⨰⨱⨲⨳⨴⨵⨶⨷⨸⨻⨼⨽⩀⩃⩄⩋⩍⩎⩑⩓⩕⩘⩚⩜⩞⩟⩠⫛⊍▷⨝⟕⟖⟗↑↓⇵⟰⟱⤈⤉⤊⤋⤒⤓⥉⥌⥍⥏⥑⥔⥕⥘⥙⥜⥝⥠⥡⥣⥥⥮⥯￪￬]/},
       // ASCII operators
@@ -426,7 +426,7 @@ export default function(hljs) {
   };
 
   var INTERPOLATED_VARIABLE = {
-    className: 'subst',
+    className: 'variable',
     begin: '\\$' + VARIABLE_NAME_RE
   };
 
@@ -480,13 +480,14 @@ export default function(hljs) {
     className: '',
     // Match fun(... and fun.(...
     // begin: '(\\b' + VARIABLE_NAME_RE + '!*\\.?\\()',
-    begin: '(\\b' + VARIABLE_NAME_RE + '\\.?\\()',
+    begin: '(\\b' + VARIABLE_NAME_RE + '({.*?}|\\.)?\\()',
     end: '\\)',
     returnBegin:true,
     keywords: KEYWORDS,
     contains: [
       // Cheating a bit -- not all functions are builtins, but who cares in julia!
-      {begin:'\\b' + VARIABLE_NAME_RE + '(?=\\.?\\()', className: 'built_in'},
+      {begin:'\\b(ccall|new({.*?})?)(?=\\()', className: 'keyword'}, // Non-standard function
+      {begin:'\\b' + VARIABLE_NAME_RE + '({.*?})?(?=\\.?\\()', className: 'built_in'},
       ...ATOMS,
       'self',
       TYPE_CONTEXT,
@@ -496,7 +497,7 @@ export default function(hljs) {
   }
 
   var FUNCTION_DEFINITION_PARAMETERS = {
-    begin: '(?<=' + VARIABLE_NAME_RE + ')\\(',
+    begin: '(?<=' + VARIABLE_NAME_RE + '({.*?})?)\\(',
     end: '\\)',
     className: '',
     keywords: KEYWORDS,
@@ -512,17 +513,17 @@ export default function(hljs) {
 
   var FUNCTION_DEFINITION = {
     className: '',
-    begin: '(\\bfunction\\s+' + '(' + VARIABLE_NAME_RE + '\\.)*)' + VARIABLE_NAME_RE + '\\(.*\\)(\\s+where\\s+({.*}|' + VARIABLE_NAME_RE + '))?',
+    begin: '\\bfunction[ \\t]+' + '(' + VARIABLE_NAME_RE + '\\.)*' + VARIABLE_NAME_RE + '({.*})?\\(.*\\)([ \\t]+where\\s+({.*?}|' + VARIABLE_NAME_RE + '))?',
     returnBegin:true,
     contains: [
         // Function keyword
         {begin: '\\bfunction\\s', className: 'keyword'},
         // Skip over leading A.B.
-        {begin: '(' + VARIABLE_NAME_RE + ')(?=\\.)', end: '(?=' + VARIABLE_NAME_RE+'\\()', contains:[
+        {begin: '(' + VARIABLE_NAME_RE + ')(?=\\.)', end: '(?=' + VARIABLE_NAME_RE+'({.*?})?\\()', contains:[
           {begin: '\\.', className: 'built_in'}
         ]},
         // Function name
-        {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
+        {begin: VARIABLE_NAME_RE + '({.*?})?(?=\\()', className: 'title'},
         // Parameters
         FUNCTION_DEFINITION_PARAMETERS,
         // Possibly a where-clause
@@ -532,7 +533,7 @@ export default function(hljs) {
 
   var SHORT_FUNCTION_DEFINITION = {
     className: '',
-    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where\\s+({.*}|' + VARIABLE_NAME_RE + '))?\\s*=',
+    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where.*?)?\\s*=',
     returnBegin:true,
     contains: [
         {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
@@ -544,9 +545,9 @@ export default function(hljs) {
   var TYPEDEF = {
     className: 'class',
     variants: [
-      { begin: '(?<=primitive\\s+type\\s+)' + VARIABLE_NAME_RE },
-      { begin: '(?<=abstract\\s+type\\s+)' + VARIABLE_NAME_RE + '({.*?})?' },
-      { begin: '(?<=(mutable\\s+)?struct\\s+)' + VARIABLE_NAME_RE + '({.*?})?' },
+      { begin: '(?<=primitive[ \\t]+type[ \\t]+)' + VARIABLE_NAME_RE },
+      { begin: '(?<=abstract[ \\t]+type[ \\t]+)' + VARIABLE_NAME_RE + '({.*?})?' },
+      { begin: '(?<=(mutable[ \\t]+)?struct[ \\t]+)' + VARIABLE_NAME_RE + '({.*?})?' },
     ]
   }
 
@@ -564,7 +565,7 @@ export default function(hljs) {
     {
       className: 'keyword',
       begin:
-        '\\b(((abstract|primitive)\\s+)type|(mutable\\s+)?struct)\\b'
+        '\\b(((abstract|primitive)[ \\t]+)type|(mutable[ \\t]+)?struct)\\b'
     },
     BUILTIN_OPERATORS,
     KEYWORDLIKE_OPERATORS,
