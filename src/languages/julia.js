@@ -492,6 +492,7 @@ export default function(hljs) {
       TYPE_CONTEXT,
       BUILTIN_OPERATORS,
       KEYWORDLIKE_OPERATORS,
+      COMMENT,
     ]
   }
 
