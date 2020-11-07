@@ -532,7 +532,7 @@ export default function(hljs) {
 
   var SHORT_FUNCTION_DEFINITION = {
     className: '',
-    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where.*?)?\\s*(?==)',
+    begin: VARIABLE_NAME_RE + '\\(.*\\)(\\s+where.*?)?\\s*(?==(?!=))',
     returnBegin:true,
     contains: [
         {begin: VARIABLE_NAME_RE + '(?=\\()', className: 'title'},
